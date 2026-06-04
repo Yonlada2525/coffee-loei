@@ -211,11 +211,13 @@ export default function Dashboard({ role }) {
               <h1 className="text-3xl font-black tracking-tight text-coffee md:text-4xl">ยินดีต้อนรับ {user?.fullname || 'ผู้ใช้งาน'}</h1>
               <p className="mt-1 text-muted">ภาพรวมข้อมูลสวนกาแฟ ผลผลิต และรายงานเชิงสถิติของระบบ</p>
             </div>
-            <div className="dash-search">
+
+            {/* <div className="dash-search">
               <Search size={17} className="text-muted" />
               <span className="text-sm font-semibold text-muted">ค้นหาข้อมูลสวน / ผลผลิต / รายงาน</span>
               <span className="ml-auto rounded-full bg-white px-2 py-1 text-xs font-black text-brown">⌘</span>
-            </div>
+            </div> */}
+            
           </div>
 
           <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="official-dashboard-hero mb-5">

@@ -1,1 +1,24 @@
-<!doctype html><html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Owner Dashboard</title><script src="https://cdn.tailwindcss.com"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><link rel="stylesheet" href="../../assets/css/style.css"></head><body class="bg-green-50"><main class="max-w-7xl mx-auto p-6"><h1 class="text-2xl font-bold text-green-900 mb-4">Dashboard เจ้าของสวน</h1><div id="cards" class="grid md:grid-cols-3 gap-4"></div><div class="card mt-4"><canvas id="monthlyChart"></canvas></div></main><script src="../../assets/js/api.js"></script><script src="../../assets/js/owner.js"></script><script>initOwner();api('/reports/owner-summary').then(s=>{cards.innerHTML=[['จำนวนสวนของฉัน',s.total_farms],['พื้นที่รวม',s.total_area+' ไร่'],['ผลผลิตรวม',s.total_production+' กก.']].map(x=>`<div class='card'><p>${x[0]}</p><b class='text-3xl text-green-900'>${x[1]}</b></div>`).join('');new Chart(monthlyChart,{type:'bar',data:{labels:['ม.ค.','ก.พ.','มี.ค.'],datasets:[{label:'ผลผลิตรายเดือน',data:[s.monthly.jan||0,s.monthly.feb||0,s.monthly.mar||0]}]}});});</script></body></html>
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Owner Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+
+<body class="bg-green-50">
+    <main class="max-w-7xl mx-auto p-6">
+        <h1 class="text-2xl font-bold text-green-900 mb-4">Dashboard เจ้าของสวน</h1>
+        <div id="cards" class="grid md:grid-cols-3 gap-4"></div>
+        <div class="card mt-4"><canvas id="monthlyChart"></canvas></div>
+    </main>
+    <script src="../../assets/js/api.js"></script>
+    <script src="../../assets/js/owner.js"></script>
+    <script>initOwner(); api('/reports/owner-summary').then(s => { cards.innerHTML = [['จำนวนสวนของฉัน', s.total_farms], ['พื้นที่รวม', s.total_area + ' ไร่'], ['ผลผลิตรวม', s.total_production + ' กก.']].map(x => `<div class='card'><p>${x[0]}</p><b class='text-3xl text-green-900'>${x[1]}</b></div>`).join(''); new Chart(monthlyChart, { type: 'bar', data: { labels: ['ม.ค.', 'ก.พ.', 'มี.ค.'], datasets: [{ label: 'ผลผลิตรายเดือน', data: [s.monthly.jan || 0, s.monthly.feb || 0, s.monthly.mar || 0] }] } }); });</script>
+</body>
+
+</html>
