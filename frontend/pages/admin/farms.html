@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>สวนกาแฟ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body class="bg-green-50">
+    <main class="max-w-7xl mx-auto p-6">
+        <h1 class="text-2xl font-bold text-green-900 mb-4">จัดการสวนกาแฟ</h1>
+
+        <form id="form" class="card grid md:grid-cols-4 gap-3 mb-4">
+            <input type="hidden" name="id">
+            <select id="owner_id" class="input" name="owner_id"></select>
+            <select id="farm_type_id" class="input" name="farm_type_id"></select>
+            <select id="coffee_id" class="input" name="coffee_id"></select>
+            <select id="soil_type_id" class="input" name="soil_type_id"></select>
+            <input class="input" name="farm_name" placeholder="ชื่อสวน">
+            <input class="input" name="district" placeholder="อำเภอ">
+            <input class="input" name="sub_district" placeholder="ตำบล">
+            <input class="input" name="village" placeholder="หมู่บ้าน">
+            <input class="input" name="house_no" placeholder="บ้านเลขที่">
+            <input class="input" name="postal_code" placeholder="รหัสไปรษณีย์">
+            <input class="input" name="area_size" type="number" placeholder="พื้นที่ไร่">
+            <input class="input" name="latitude" placeholder="latitude">
+            <input class="input" name="longitude" placeholder="longitude">
+            <input class="input" name="altitude" type="number" placeholder="ความสูง">
+            <input class="input" name="planting_year" type="date">
+            <input class="input" name="description" placeholder="รายละเอียด">
+            <label>
+                <input type="checkbox" name="water_system"> มีระบบน้ำ
+            </label>
+            <button class="btn btn-green">บันทึก</button>
+        </form>
+
+        <div id="list" class="grid md:grid-cols-2 gap-4"></div>
+    </main>
+
+    <script src="../../assets/js/api.js"></script>
+    <script src="../../assets/js/admin.js"></script>
+    <script>
+        initAdmin();
+
+        async function setup() {
+            await fillSelect('farm_type_id', '/farm-types', 'farm_type_name', 'farm_type_id');
+            await fillSelect('coffee_id', '/coffee-types', 'coffee_name', 'coffee_id');
+            await fillSelect('soil_type_id', '/soil-types', 'soil_type_name', 'soil_type_id');
+
+            const owners = await api('/owners');
+            owner_id.innerHTML = owners.map(o => `<option value='${o.owner_id}'>${o.fullname}</option>`).join('');
+            load();
+        }
+
+        async function load() {
+            const rows = await api('/farms');
+            list.innerHTML = rows.map(r => `<div class='card'>
+                <b>${r.farm_name}</b>
+                <p>${r.fullname || ''} | ${r.district || ''} | ${r.coffee_name || ''}</p>
+                <button class='btn btn-blue' onclick='edit(${JSON.stringify(r)})'>แก้ไข</button>
+                <button class='btn btn-red' onclick='del(${r.farm_id})'>ลบ</button>
+            </div>`).join('');
+        }
+
+        function edit(r) {
+            for (const [k, v] of Object.entries(r)) {
+                if (form[k]) form[k].value = v ?? '';
+            }
+            form.id.value = r.farm_id;
+            form.water_system.checked = !!r.water_system;
+        }
+
+        async function del(id) {
+            if (confirm('ลบ?')) {
+                await api('/farms/' + id, { method: 'DELETE' });
+                load();
+            }
+        }
+
+        form.onsubmit = async e => {
+            e.preventDefault();
+            const b = Object.fromEntries(new FormData(form));
+            b.water_system = form.water_system.checked;
+            const id = b.id;
+            delete b.id;
+            await api('/farms' + (id ? '/' + id : ''), {
+                method: id ? 'PUT' : 'POST',
+                body: b
+            });
+            form.reset();
+            load();
+        };
+
+        setup();
+    </script>
+</body>
+</html>

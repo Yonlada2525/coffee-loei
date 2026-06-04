@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>พันธุ์กาแฟ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body class="bg-green-50">
+    <main class="max-w-5xl mx-auto p-6">
+        <h1 class="text-2xl font-bold text-green-900 mb-4">จัดการพันธุ์กาแฟ</h1>
+
+        <form id="form" class="card grid md:grid-cols-4 gap-3 mb-4">
+            <input type="hidden" name="id">
+            <input class="input" name="coffee_name" placeholder="ชื่อพันธุ์">
+            <input class="input" name="process_type" placeholder="วิธีแปรรูป">
+            <input class="input" name="description" placeholder="รายละเอียด">
+            <button class="btn btn-green">บันทึก</button>
+        </form>
+
+        <div class="card">
+            <table class="table">
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="../../assets/js/api.js"></script>
+    <script src="../../assets/js/admin.js"></script>
+    <script>
+        initAdmin();
+
+        async function load() {
+            const rows = await api('/coffee-types');
+            tbody.innerHTML = rows.map(r => `
+                <tr>
+                    <td>${r.coffee_name}</td>
+                    <td>${r.process_type || ''}</td>
+                    <td>${r.description || ''}</td>
+                    <td>
+                        <button class='btn btn-blue' onclick='edit(${JSON.stringify(r)})'>แก้ไข</button>
+                        <button class='btn btn-red' onclick='del(${r.coffee_id})'>ลบ</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function edit(r) {
+            form.id.value = r.coffee_id;
+            form.coffee_name.value = r.coffee_name;
+            form.process_type.value = r.process_type;
+            form.description.value = r.description;
+        }
+
+        async function del(id) {
+            if (confirm('ลบ?')) {
+                await api('/coffee-types/' + id, { method: 'DELETE' });
+                load();
+            }
+        }
+
+        form.onsubmit = async e => {
+            e.preventDefault();
+            const b = Object.fromEntries(new FormData(form));
+            const id = b.id;
+            delete b.id;
+            await api('/coffee-types' + (id ? '/' + id : ''), {
+                method: id ? 'PUT' : 'POST',
+                body: b
+            });
+            form.reset();
+            load();
+        };
+
+        load();
+    </script>
+</body>
+</html>

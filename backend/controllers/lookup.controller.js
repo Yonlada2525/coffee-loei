@@ -1,0 +1,8 @@
+const pool = require('../config/db');
+
+exports.createCoffee = async (req,res)=>{ const {coffee_name,process_type,description}=req.body; await pool.query('INSERT INTO coffee_type(coffee_name,process_type,description) VALUES(?,?,?)',[coffee_name,process_type,description]); res.status(201).json({message:'เพิ่มพันธุ์กาแฟสำเร็จ'}); };
+exports.updateCoffee = async (req,res)=>{ const {coffee_name,process_type,description}=req.body; await pool.query('UPDATE coffee_type SET coffee_name=?,process_type=?,description=? WHERE coffee_id=?',[coffee_name,process_type,description,req.params.id]); res.json({message:'แก้ไขพันธุ์กาแฟสำเร็จ'}); };
+exports.createFarmType = async (req,res)=>{ const {farm_type_name,description}=req.body; await pool.query('INSERT INTO farm_type(farm_type_name,description) VALUES(?,?)',[farm_type_name,description]); res.status(201).json({message:'เพิ่มประเภทสวนสำเร็จ'}); };
+exports.updateFarmType = async (req,res)=>{ const {farm_type_name,description}=req.body; await pool.query('UPDATE farm_type SET farm_type_name=?,description=? WHERE farm_type_id=?',[farm_type_name,description,req.params.id]); res.json({message:'แก้ไขประเภทสวนสำเร็จ'}); };
+exports.createSoil = async (req,res)=>{ const {soil_type_name}=req.body; await pool.query('INSERT INTO soil_type(soil_type_name) VALUES(?)',[soil_type_name]); res.status(201).json({message:'เพิ่มประเภทดินสำเร็จ'}); };
+exports.updateSoil = async (req,res)=>{ const {soil_type_name}=req.body; await pool.query('UPDATE soil_type SET soil_type_name=? WHERE soil_type_id=?',[soil_type_name,req.params.id]); res.json({message:'แก้ไขประเภทดินสำเร็จ'}); };

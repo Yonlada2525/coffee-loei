@@ -1,0 +1,10 @@
+const router = require('express').Router();
+const generic = require('../controllers/generic.controller');
+const c = require('../controllers/lookup.controller');
+const auth = require('../middleware/auth');
+router.get('/', generic.list('coffee_type','coffee_id DESC'));
+router.post('/', auth(['admin']), c.createCoffee);
+router.put('/:id', auth(['admin']), c.updateCoffee);
+router.delete('/:id', auth(['admin']), generic.remove('coffee_type','coffee_id'));
+router.patch('/:id/restore', auth(['admin']), generic.restore('coffee_type','coffee_id'));
+module.exports = router;

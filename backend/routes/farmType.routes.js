@@ -1,0 +1,10 @@
+const router = require('express').Router();
+const generic = require('../controllers/generic.controller');
+const c = require('../controllers/lookup.controller');
+const auth = require('../middleware/auth');
+router.get('/', generic.list('farm_type','farm_type_id DESC'));
+router.post('/', auth(['admin']), c.createFarmType);
+router.put('/:id', auth(['admin']), c.updateFarmType);
+router.delete('/:id', auth(['admin']), generic.remove('farm_type','farm_type_id'));
+router.patch('/:id/restore', auth(['admin']), generic.restore('farm_type','farm_type_id'));
+module.exports = router;

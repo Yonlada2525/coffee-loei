@@ -1,0 +1,10 @@
+const router = require('express').Router();
+const c = require('../controllers/production.controller');
+const auth = require('../middleware/auth');
+router.get('/', auth(['admin']), c.list);
+router.get('/mine', auth(['owner']), c.myList);
+router.post('/', auth(['admin','owner']), c.create);
+router.put('/:id', auth(['admin','owner']), c.update);
+router.delete('/:id', auth(['admin','owner']), c.remove);
+router.patch('/:id/restore', auth(['admin','owner']), c.restore);
+module.exports = router;

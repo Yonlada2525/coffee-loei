@@ -1,0 +1,1 @@
+import{Navigate}from'react-router-dom';import{user}from'./Layout';export default function Protected({roles,children}){const u=user();if(!u)return <Navigate to="/login"/>;if(roles&&!roles.includes(u.role))return <Navigate to="/"/>;return children}

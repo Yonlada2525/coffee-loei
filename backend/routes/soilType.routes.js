@@ -1,0 +1,10 @@
+const router = require('express').Router();
+const generic = require('../controllers/generic.controller');
+const c = require('../controllers/lookup.controller');
+const auth = require('../middleware/auth');
+router.get('/', generic.list('soil_type','soil_type_id DESC'));
+router.post('/', auth(['admin']), c.createSoil);
+router.put('/:id', auth(['admin']), c.updateSoil);
+router.delete('/:id', auth(['admin']), generic.remove('soil_type','soil_type_id'));
+router.patch('/:id/restore', auth(['admin']), generic.restore('soil_type','soil_type_id'));
+module.exports = router;

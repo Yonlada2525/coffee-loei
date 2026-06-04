@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>เข้าสู่ระบบ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+
+<body class="bg-green-50">
+    <main class="max-w-md mx-auto p-6 mt-10 card">
+        <h1 class="text-2xl font-bold text-green-900 mb-4">เข้าสู่ระบบ</h1>
+        <form id="loginForm" class="space-y-3"><select class="input" name="role">
+                <option value="admin">ผู้ดูแลระบบ</option>
+                <option value="owner">เจ้าของสวน</option>
+            </select><input class="input" name="username" placeholder="ชื่อผู้ใช้"><input class="input" name="password"
+                type="password" placeholder="รหัสผ่าน"><button class="btn btn-green w-full">เข้าสู่ระบบ</button></form>
+        <p class="mt-4"><a class="text-green-700" href="register.html">สมัครสมาชิกเจ้าของสวน</a></p>
+    </main>
+    <script src="../../assets/js/api.js"></script>
+    <script>loginForm.onsubmit = async e => { e.preventDefault(); try { const data = await api('/auth/login', { method: 'POST', body: Object.fromEntries(new FormData(loginForm)) }); setSession(data); location.href = data.user.role === 'admin' ? '/pages/admin/dashboard.html' : '/pages/owner/dashboard.html' } catch (err) { alert(err.message) } };</script>
+</body>
+
+</html>
