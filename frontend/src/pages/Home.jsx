@@ -29,7 +29,7 @@ export default function Home() {
               </motion.div>
 
               <motion.h1 initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .08 }} className="mt-5 max-w-4xl text-4xl font-black leading-tight text-coffee md:text-6xl">
-                ระบบฐานข้อมูลพื้นที่ปลูกกาแฟจังหวัดเลย
+                ระบบฐานข้อมูลพื้นที่ปลูกกาแฟจังหวัดเลย hello
               </motion.h1>
 
               <motion.p initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .16 }} className="mt-5 max-w-3xl text-lg leading-8 text-muted">
