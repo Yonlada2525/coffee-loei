@@ -1,9 +1,15 @@
-import { Download, FileSpreadsheet, Printer } from "lucide-react";
+// Farms Manager - จัดการข้อมูลสวนกาแฟและตำแหน่งบนแผนที่ พร้อมฟีเจอร์ส่งออกข้อมูลเป็นรายงานทางการ
+import { Download, FileSpreadsheet, Printer, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import SmartLocationFields from "../components/SmartLocationFields";
 import { api, fileUrl } from "../utils/api";
+import FarmList from "../components/farms/FarmList";
+import FarmForm from "../components/farms/FarmForm";
+import FarmExport from "../components/farms/FarmExport";
+import { Search } from "lucide-react";
 import FarmDetailModal from "../components/FarmDetailModal";
 import RestoreCountdown from "../components/RestoreCountdown";
+
 
 const blank = {
   owner_id: "",
@@ -21,6 +27,7 @@ const blank = {
   longitude: "",
   water_system: 1,
   description: "",
+  image: null,
   altitude: "",
   planting_year: "",
 };
@@ -74,7 +81,10 @@ export default function FarmsManager({ owner = false }) {
   const [edit, setEdit] = useState(null);
   const [deleted, setDeleted] = useState(false);
   const [keyword, setKeyword] = useState("");
+  const [tab, setTab] = useState("list");
+  const [mapFarm, setMapFarm] = useState(null);
   const [selectedFarm, setSelectedFarm] = useState(null);
+  const [preview, setPreview] = useState(null);
 
   const title = owner
     ? "จัดการสวนกาแฟของตนเอง"
@@ -127,14 +137,102 @@ export default function FarmsManager({ owner = false }) {
 
   async function save(e) {
     e.preventDefault();
+
+    const fd = new FormData();
+
+    // Object.entries(form).forEach(([key, value]) => {
+    //   fd.append(key, value);
+    // });
+    Object.entries(form).forEach(([key, value]) => {
+      if (key === "image") {
+
+        // ส่งเฉพาะตอนเลือกรูปใหม่
+        if (value instanceof File) {
+          fd.append("image", value);
+        }
+
+      } else {
+        fd.append(key, value ?? "");
+      }
+    });
+
     await api(edit ? `/farms/${edit}` : "/farms", {
       method: edit ? "PUT" : "POST",
-      body: form,
+      body: fd,
     });
+    
     setForm(blank);
     setEdit(null);
+    setPreview(null); // เพิ่มบรรทัดนี้
+
     await load();
   }
+
+  // function start(f) {
+  //   setEdit(f.farm_id);
+  //   setForm({
+  //     ...blank,
+  //     ...f,
+  //     planting_year: (f.planting_year || "").slice(0, 10),
+  //   });
+
+
+  // function start(f) {
+  // setEdit(f.farm_id);
+  // setPreview(f.file_path ? fileUrl(f.file_path) : null); // เพิ่มบรรทัดนี้
+
+  // setForm({
+  //   ...blank,
+  //   ...f,
+
+  //   // แก้ date
+  //   planting_year: f.planting_year
+  //     ? f.planting_year.slice(0, 10)
+  //     : "",
+
+  //   // โหลดรูปเดิม
+  //   image: f.file_path
+  //     ? `${fileUrl}/${f.file_path}`
+  //     : "",
+  //     });
+
+     
+  //   // เปิดแท็บฟอร์มแก้ไข
+  //   setTab("add");
+  //   //เลื่อนขึ้นบน
+  //   window.scrollTo({ top: 0, behavior: "smooth" });
+  // }
+  function start(f) {
+  setEdit(f);
+
+  setPreview(
+    f.file_path
+      ? `${fileUrl}/${f.file_path}`
+      : null
+  );
+
+  setForm({
+    ...blank,
+    ...f,
+
+    planting_year: f.planting_year
+      ? f.planting_year.slice(0, 10)
+      : "",
+
+    image: f.file_path
+      ? `${fileUrl}/${f.file_path}`
+      : "",
+  });
+
+  setTab("add");
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+}
+
+
+
 
   async function openFarmDetail(farmId) {
     try {
@@ -142,16 +240,6 @@ export default function FarmsManager({ owner = false }) {
     } catch (error) {
       alert(error.message || "ไม่สามารถโหลดข้อมูลสวนได้");
     }
-  }
-
-  function start(f) {
-    setEdit(f.farm_id);
-    setForm({
-      ...blank,
-      ...f,
-      planting_year: (f.planting_year || "").slice(0, 10),
-    });
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function exportCsv() {
@@ -195,295 +283,167 @@ export default function FarmsManager({ owner = false }) {
     const w = window.open("", "_blank");
     w.document.write(html);
     w.document.close();
+    }
+    function openMap(f) {
+    setMapFarm(f);
+    setTab("map");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
+
+ 
 
   return (
     <main className="shell py-8">
+      {/* จัดการสวน */}
       <section className="hero p-7">
         <span className="chip">Farm Management</span>
-        <h1 className="mt-4 text-3xl font-black text-coffee md:text-5xl">
+        <h1 className="mt-4 text-4xl font-black text-coffee md:text-4xl">
           {title}
         </h1>
-        <p className="mt-2 max-w-3xl text-muted">
-          เพิ่ม แก้ไข ลบ ดูรายละเอียดสวน ตำแหน่งบนแผนที่
-          และส่งออกข้อมูลสวนเป็นไฟล์รายงานทางการ
+        <p className="mt-2 max-w-3xl text-muted mb-6">
+          {" "}
+          เพิ่ม แก้ไข ลบ ดูรายละเอียดสวน
+          ตำแหน่งบนแผนที่และส่งออกข้อมูลสวนเป็นไฟล์รายงานทางการ
         </p>
-      </section>
 
-      <section className="mt-8 grid gap-5 xl:grid-cols-3">
-        <form onSubmit={save} className="card grid gap-4 p-5 xl:col-span-1">
-          <h2 className="text-xl font-black text-coffee">
-            {edit ? "แก้ไขข้อมูลสวน" : "เพิ่มข้อมูลสวน"}
-          </h2>
-          {!owner && (
-            <div>
-              <label className="label">เจ้าของสวน</label>
-              <select
-                className="select"
-                value={form.owner_id || ""}
-                onChange={(e) => setForm({ ...form, owner_id: e.target.value })}
-                required
-              >
-                <option value="">เลือกเจ้าของ</option>
-                {look.owners.map((o) => (
-                  <option value={o.owner_id} key={o.owner_id}>
-                    {o.fullname}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-          <div>
-            <label className="label">ชื่อสวน</label>
-            <input
-              className="input"
-              value={form.farm_name || ""}
-              onChange={(e) => setForm({ ...form, farm_name: e.target.value })}
-              required
-            />
-          </div>
-          <div className="grid gap-3 md:grid-cols-3">
-            <select
-              className="select"
-              value={form.farm_type_id || ""}
-              onChange={(e) =>
-                setForm({ ...form, farm_type_id: e.target.value })
-              }
-            >
-              <option value="">ประเภทสวน</option>
-              {look.farmTypes.map((x) => (
-                <option value={x.farm_type_id} key={x.farm_type_id}>
-                  {x.farm_type_name}
-                </option>
-              ))}
-            </select>
-            <select
-              className="select"
-              value={form.coffee_id || ""}
-              onChange={(e) => setForm({ ...form, coffee_id: e.target.value })}
-            >
-              <option value="">พันธุ์กาแฟ</option>
-              {look.coffeeTypes.map((x) => (
-                <option value={x.coffee_id} key={x.coffee_id}>
-                  {x.coffee_name}
-                </option>
-              ))}
-            </select>
-            <select
-              className="select"
-              value={form.soil_type_id || ""}
-              onChange={(e) =>
-                setForm({ ...form, soil_type_id: e.target.value })
-              }
-            >
-              <option value="">ประเภทดิน</option>
-              {look.soilTypes.map((x) => (
-                <option value={x.soil_type_id} key={x.soil_type_id}>
-                  {x.soil_type_name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <input
-            className="input"
-            placeholder="บ้านเลขที่"
-            value={form.house_no || ""}
-            onChange={(e) => setForm({ ...form, house_no: e.target.value })}
-          />
-          <SmartLocationFields form={form} setForm={setForm} />
-          <div className="grid gap-3 md:grid-cols-3">
-            <input
-              className="input"
-              type="number"
-              placeholder="พื้นที่ไร่"
-              value={form.area_size || ""}
-              onChange={(e) => setForm({ ...form, area_size: e.target.value })}
-            />
-            <input
-              className="input"
-              type="number"
-              placeholder="ความสูง ม."
-              value={form.altitude || ""}
-              onChange={(e) => setForm({ ...form, altitude: e.target.value })}
-            />
-            <input
-              className="input"
-              type="date"
-              value={form.planting_year || ""}
-              onChange={(e) =>
-                setForm({ ...form, planting_year: e.target.value })
-              }
-            />
-          </div>
-          <div className="grid gap-3 md:grid-cols-2">
-            <input
-              className="input"
-              placeholder="Latitude"
-              value={form.latitude || ""}
-              onChange={(e) => setForm({ ...form, latitude: e.target.value })}
-            />
-            <input
-              className="input"
-              placeholder="Longitude"
-              value={form.longitude || ""}
-              onChange={(e) => setForm({ ...form, longitude: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="label">ระบบน้ำ</label>
-            <div className="grid grid-cols-2 rounded-full border border-[rgba(122,79,56,.14)] bg-white p-2">
-              <button
-                type="button"
-                className={`btn ${Number(form.water_system) ? "btn-rose" : "btn-ghost"}`}
-                onClick={() => setForm({ ...form, water_system: 1 })}
-              >
-                มี
-              </button>
-              <button
-                type="button"
-                className={`btn ${!Number(form.water_system) ? "btn-rose" : "btn-ghost"}`}
-                onClick={() => setForm({ ...form, water_system: 0 })}
-              >
-                ไม่มี
-              </button>
-            </div>
-          </div>
-          <textarea
-            className="textarea"
-            placeholder="รายละเอียดสวน"
-            value={form.description || ""}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-          />
-          <label className="label">รูปภาพสวน</label>
-            <input
-                type="file"
-                name="image"
-                accept="image/*"
-                onChange={(e) =>
-                setForm({ ...form, image: e.target.files[0] })
-                }
-                className="input"
-            />
-          <div className="grid gap-2 sm:grid-cols-2">
-            <button className="btn btn-primary">
-              {edit ? "บันทึกแก้ไข" : "เพิ่มสวน"}
-            </button>
-            {edit && (
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => {
-                  setEdit(null);
-                  setForm(blank);
-                }}
-              >
-                ยกเลิก
-              </button>
-            )}
-          </div>
-        </form>
+        {/* BUTTON GROUP */}
+        <div className="flex flex-wrap  gap-3 mb-4">
+          {/* รายการสวน */}
+          <button
+            onClick={() => setTab("list")}
+            className={`px-4 py-2 rounded-xl border transition
+              ${
+                tab === "list"
+                  ? "bg-black text-white"
+                  : "bg-white hover:bg-gray-100"
+              }`}
+          >
+            รายการสวน
+          </button>
+          {/* เพิ่ม */}
+          <button
+            onClick={() => setTab("add")}
+            className={`px-4 py-2 rounded-xl flex items-center gap-2 border transition
+              ${
+                tab === "add"
+                  ? "bg-black text-white"
+                  : "bg-white hover:bg-gray-100"
+              }`}
+          >
+            <Plus size={16} />
+            เพิ่มสวน
+          </button>
+          {/* ส่งออก */}
+          <button
+            onClick={() => setTab("export")}
+            className={`px-4 py-2 rounded-xl flex items-center gap-2 border transition
+              ${
+                tab === "export"
+                  ? "bg-black text-white"
+                  : "bg-white hover:bg-gray-100"
+              }`}
+          >
+            <Download size={16} />
+            ส่งออก
+          </button>
+          {/* ปุ่มข้อมูล */}
+          <button
+            className={`btn px-6 rounded-md  ${
+              !deleted ? "btn-primary" : "btn-ghost"
+            }`}
+            onClick={() => setDeleted(false)}
+          >
+            ข้อมูลปกติ
+          </button>
 
-        <div className="xl:col-span-2">
-          <div className="card mb-4 grid gap-3 p-4 lg:grid-cols-[1fr_auto]">
-            <input
-              className="input"
-              placeholder="ค้นหาชื่อสวน เจ้าของ อำเภอ ตำบล หรือพันธุ์กาแฟ"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-            />
-            <div className="flex flex-wrap gap-2">
-              <button className="btn btn-mint" onClick={exportExcel}>
-                <FileSpreadsheet size={18} />
-                Excel
-              </button>
-              <button className="btn btn-rose" onClick={exportCsv}>
-                <Download size={18} />
-                CSV
-              </button>
-              <button className="btn btn-primary" onClick={printOfficial}>
-                <Printer size={18} />
-                รายงาน/PDF
-              </button>
-            </div>
-          </div>
-          <div className="mb-3 flex flex-wrap gap-3">
-            <button
-              className={!deleted ? "btn btn-primary" : "btn btn-ghost"}
-              onClick={() => setDeleted(false)}
-            >
-              ข้อมูลปกติ
-            </button>
-            <button
-              className={deleted ? "btn btn-primary" : "btn btn-ghost"}
-              onClick={() => setDeleted(true)}
-            >
-              ข้อมูลที่ลบ
-            </button>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            {filtered.map((f, i) => (
-              <article className="card p-4" key={f.farm_id}>
-                <img
-                  className="h-44 w-full rounded-3xl object-cover"
-                  src={fileUrl(
-                    f.file_path ||
-                      `frontend/assets/images/farm-${(i % 5) + 1}.svg`,
-                  )}
-                />
-                <h3 className="mt-3 text-xl font-black text-coffee">
-                  {f.farm_name}
-                </h3>
-                <p className="text-muted">
-                  {f.village} ต.{f.sub_district} อ.{f.district}
-                </p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <span className="chip">{f.coffee_name || "-"}</span>
-                  <span className="chip">{f.area_size || 0} ไร่</span>
-                  <span className="chip">{f.fullname || "เจ้าของสวน"}</span>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {deleted && <RestoreCountdown days={f.restore_days_left} />}
-                  <button
-                    className="btn btn-primary"
-                    type="button"
-                    onClick={() => openFarmDetail(f.farm_id)}
-                  >
-                    ดูข้อมูลสวน
-                  </button>
-                  {deleted ? (
-                    <button
-                      className="btn btn-mint"
-                      onClick={() =>
-                        api(`/farms/${f.farm_id}/restore`, {
-                          method: "PATCH",
-                        }).then(load)
-                      }
-                    >
-                      กู้คืน
-                    </button>
-                  ) : (
-                    <>
-                      <button className="btn btn-rose" onClick={() => start(f)}>
-                        แก้ไข
-                      </button>
-                      <button
-                        className="btn btn-ghost"
-                        onClick={() =>
-                          confirm("ลบสวน?") &&
-                          api(`/farms/${f.farm_id}`, { method: "DELETE" }).then(
-                            load,
-                          )
-                        }
-                      >
-                        ลบ
-                      </button>
-                    </>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
+          <button
+            className={`btn px-6 rounded-md ${
+              deleted ? "btn-primary" : "btn-ghost"
+            }`}
+            onClick={() => setDeleted(true)}
+          >
+            ข้อมูลที่ลบ
+          </button>
         </div>
+
+        {/* แท็บรายการสวน */}
+        {tab === "list" && (
+          <>
+            {/* ค้นหาสวน */}
+            <div className="card mb-4 grid gap-3 p-3 lg:grid-cols-[1fr_auto] relative ">
+              <Search
+                size={18}
+                className="absolute right-20 top-1/2 -translate-y-1/2 text-gray-400 "
+              />
+              <input
+                className="input"
+                placeholder="ค้นหาชื่อสวน เจ้าของ อำเภอ ตำบล หรือพันธุ์กาแฟ "
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+              />
+            </div>
+
+
+            {/* รายการสวน */}
+            <FarmList
+              filtered={filtered}
+              deleted={deleted}
+              load={load}
+              start={start}
+              openMap={openMap}
+              openFarmDetail={openFarmDetail}  
+              api={api}
+              fileUrl={fileUrl}
+            />
+          </>
+        )}
+        {/* แท็บเพิ่มข้อมูล */}
+        {tab === "add" && (
+          <FarmForm
+            owner={owner}
+            look={look}
+            form={form}
+            setForm={setForm}
+            save={save}
+            edit={edit}
+            setEdit={setEdit}
+            blank={blank}
+            preview={preview}       
+            setPreview={setPreview}  
+          />
+        )}
+        {/* แท็บส่งออก */}
+        {tab === "export" && (
+          <FarmExport
+            exportExcel={exportExcel}
+            exportCsv={exportCsv}
+            printOfficial={printOfficial}
+          />
+        )}
+        {tab === "map" && mapFarm && (
+          <section className="card p-5">
+            <h2 className="text-2xl font-bold mb-4">
+              แผนที่สวนกาแฟ
+            </h2>
+
+            <p className="mb-4 text-muted">
+              {mapFarm.farm_name}
+            </p>
+
+            <iframe
+              title="map"
+              width="100%"
+              height="500"
+              className="rounded-2xl"
+              loading="lazy"
+              src={`https://www.google.com/maps?q=${mapFarm.latitude},${mapFarm.longitude}&output=embed`}
+            />
+          </section>
+        )}
       </section>
       <FarmDetailModal
         farm={selectedFarm}
