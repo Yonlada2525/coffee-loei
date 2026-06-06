@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { API, asset } from "../services/api";
+import { API, asset, fileUrl } from "../services/api";
 import { LOEI } from "../data/locations";
 const empty = {
   farm_name: "",
@@ -104,7 +104,7 @@ async function submit(e) {
   });
 
   if (image) {
-    fd.append("image", image);
+    fd.append("image", form.image);
   }
 
   await API.post("/farms", fd, {
@@ -383,7 +383,7 @@ async function submit(e) {
                 <td>
                     {f.file_path ? (
                     <img
-                        src={asset(f.file_path)}
+                        src={fileUrl(f.file_path)}
                         alt={f.farm_name}
                         className="w-20 h-20 object-cover rounded-lg"
                     />

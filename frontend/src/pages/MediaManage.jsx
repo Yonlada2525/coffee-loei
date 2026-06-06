@@ -46,7 +46,7 @@ export default function MediaManage() {
       <section className="grid md:grid-cols-3 gap-5 mt-8">
         {rows.map((m) => (
           <div className="card p-3" key={m.media_id}>
-            <img className="image-card" src={asset(m.file_path)} />
+            <img className="image-card" src={fileUrl(m.file_path)} />
             <p className="font-bold mt-2 text-coffee">{m.farm_name}</p>
             <button
               className="btn btn-ghost mt-3"

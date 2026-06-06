@@ -10,6 +10,7 @@ import {
   Bean 
 } from "lucide-react";
 import { useMemo } from "react";
+import RestoreCountdown from "../RestoreCountdown";
 
 export default function FarmList({
   filtered,
@@ -43,53 +44,6 @@ export default function FarmList({
 
   return (
     <div className=" mx-auto w-full max-w-6xl space-y-6">
-      {/* ===== สถิติ ===== */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {filtered.map((f, i) => (
-        <article className="card p-4" key={f.farm_id}>
-          <img
-            className="h-44 w-full rounded-3xl object-cover"
-            src={fileUrl(f.file_path)}
-            alt={f.farm_name}
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = `/assets/images/farm-${(i % 5) + 1}.svg`;
-            }}
-          />
-          <h3 className="mt-3 text-xl font-black text-coffee">{f.farm_name}</h3>
-          <p className="text-muted">
-            {f.village} ต.{f.sub_district} อ.{f.district}
-          </p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <span className="chip">{f.coffee_name || "-"}</span>
-            <span className="chip">{f.area_size || 0} ไร่</span>
-            <span className="chip">{f.fullname || "เจ้าของสวน"}</span>
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {deleted && <RestoreCountdown days={f.restore_days_left} />}
-            <button className="btn btn-primary" onClick={() => openFarmDetail(f.farm_id)}>
-              ดูข้อมูลสวน
-            </button>
-            {deleted ? (
-              <button className="btn btn-mint"
-                onClick={() => api(`/farms/${f.farm_id}/restore`, { method: "PATCH" }).then(load)}>
-                กู้คืน
-              </button>
-            ) : (
-              <>
-                <button className="btn btn-rose" onClick={() => start(f)}>แก้ไข</button>
-                <button className="btn btn-ghost"
-                  onClick={() => confirm("ลบสวน?") &&
-                    api(`/farms/${f.farm_id}`, { method: "DELETE" }).then(load)}>
-                  ลบ
-                </button>
-              </>
-            )}
-          </div>
-        </article>
-      ))}
-      </div>
-
       {/* ===== รายการสวน ===== */}
       <div className="space-y-4">
         {filtered.map((f, i) => (
@@ -155,6 +109,13 @@ export default function FarmList({
                       <Map size={18} />
                       ดูแผนที่
                     </button>
+                    
+                    <button className="flex items-center gap-2 rounded-2xl border px-5 py-3 font-medium hover:bg-gray-100" 
+                      onClick={() => openFarmDetail(f.farm_id)}>
+                      ดูข้อมูลสวน
+                    </button>
+                    {deleted && <RestoreCountdown days={f.restore_days_left} />} 
+
 
                     {!deleted && (
                       <button

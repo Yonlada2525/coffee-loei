@@ -156,54 +156,21 @@ export default function FarmsManager({ owner = false }) {
       }
     });
 
-    await api(edit ? `/farms/${edit}` : "/farms", {
+    await api(edit ? `/farms/${edit.farm_id}` : "/farms", {
       method: edit ? "PUT" : "POST",
       body: fd,
     });
     
     setForm(blank);
-    setEdit(null);
+    setEdit(f.farm_id);
     setPreview(null); // เพิ่มบรรทัดนี้
 
     await load();
   }
 
-  // function start(f) {
-  //   setEdit(f.farm_id);
-  //   setForm({
-  //     ...blank,
-  //     ...f,
-  //     planting_year: (f.planting_year || "").slice(0, 10),
-  //   });
-
-
-  // function start(f) {
-  // setEdit(f.farm_id);
-  // setPreview(f.file_path ? fileUrl(f.file_path) : null); // เพิ่มบรรทัดนี้
-
-  // setForm({
-  //   ...blank,
-  //   ...f,
-
-  //   // แก้ date
-  //   planting_year: f.planting_year
-  //     ? f.planting_year.slice(0, 10)
-  //     : "",
-
-  //   // โหลดรูปเดิม
-  //   image: f.file_path
-  //     ? `${fileUrl}/${f.file_path}`
-  //     : "",
-  //     });
-
-     
-  //   // เปิดแท็บฟอร์มแก้ไข
-  //   setTab("add");
-  //   //เลื่อนขึ้นบน
-  //   window.scrollTo({ top: 0, behavior: "smooth" });
-  // }
+  
   function start(f) {
-  setEdit(f);
+  setEdit(f.farm_id);
 
   setPreview(
     f.file_path
@@ -215,23 +182,25 @@ export default function FarmsManager({ owner = false }) {
     ...blank,
     ...f,
 
+    // แก้ date
     planting_year: f.planting_year
       ? f.planting_year.slice(0, 10)
       : "",
 
+      // โหลดรูปเดิม
     image: f.file_path
       ? `${fileUrl}/${f.file_path}`
       : "",
   });
 
+  // เปิดแท็บฟอร์มแก้ไข
   setTab("add");
+  //เลื่อนขึ้นบน
   window.scrollTo({
     top: 0,
     behavior: "smooth",
   });
 }
-
-
 
 
   async function openFarmDetail(farmId) {
