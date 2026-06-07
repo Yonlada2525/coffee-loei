@@ -14,7 +14,6 @@ router.post(
   c.create
 );
 
-
 router.put('/:id', auth(['admin','owner']), c.update);
 router.delete('/:id', auth(['admin','owner']), c.remove);
 router.patch('/:id/restore', auth(['admin','owner']), c.restore);

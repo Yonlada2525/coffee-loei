@@ -36,7 +36,7 @@ export default function Login() {
         <p className="mt-4 leading-8 text-muted">
           สำหรับผู้ดูแลระบบและเจ้าของสวนกาแฟจังหวัดเลย เพื่อจัดการข้อมูลตามสิทธิ์การใช้งาน
         </p>
-        <img src="/assets/images/farm-2.svg" className="mt-8 rounded-[32px] bg-white/60 p-3 shadow-soft" alt="สวนกาแฟจังหวัดเลย" />
+        <img src="/assets/images/shutterstock_2375278399.jpeg" className="mt-8 rounded-[32px] bg-white/60 p-3 shadow-soft" alt="สวนกาแฟจังหวัดเลย" />
       </section>
 
       <form onSubmit={submit} className="card grid gap-4 p-6 md:p-8">

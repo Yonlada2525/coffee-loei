@@ -241,12 +241,77 @@ exports.create = async (req, res) => {
 };
 
 
+// exports.update = async (req, res) => {
+//   const b = req.body;
+//   let where = 'farm_id=?';
+//   const params = [b.farm_type_id,b.coffee_id,b.soil_type_id,b.farm_name,b.house_no,b.village,b.sub_district,b.district,b.postal_code,b.area_size,b.latitude,b.longitude,b.water_system?1:0,b.description,b.altitude,b.planting_year,req.params.id];
+//   if (req.user.role === 'owner') { where += ' AND owner_id=?'; params.push(req.user.id); }
+//   await pool.query(`UPDATE coffee_farm SET farm_type_id=?,coffee_id=?,soil_type_id=?,farm_name=?,house_no=?,village=?,sub_district=?,district=?,postal_code=?,area_size=?,latitude=?,longitude=?,water_system=?,description=?,altitude=?,planting_year=?,updated_at=NOW() WHERE ${where}`, params);
+//   res.json({ message: 'แก้ไขสวนกาแฟสำเร็จ' });
+// };
 exports.update = async (req, res) => {
   const b = req.body;
+
+  // ✅ แปลง null/undefined/"" → null จริงๆ ให้ MySQL รับได้
+  const nullify = (v) => (v === '' || v === undefined || v === 'null') ? null : v;
+
   let where = 'farm_id=?';
-  const params = [b.farm_type_id,b.coffee_id,b.soil_type_id,b.farm_name,b.house_no,b.village,b.sub_district,b.district,b.postal_code,b.area_size,b.latitude,b.longitude,b.water_system?1:0,b.description,b.altitude,b.planting_year,req.params.id];
-  if (req.user.role === 'owner') { where += ' AND owner_id=?'; params.push(req.user.id); }
-  await pool.query(`UPDATE coffee_farm SET farm_type_id=?,coffee_id=?,soil_type_id=?,farm_name=?,house_no=?,village=?,sub_district=?,district=?,postal_code=?,area_size=?,latitude=?,longitude=?,water_system=?,description=?,altitude=?,planting_year=?,updated_at=NOW() WHERE ${where}`, params);
+  const params = [
+    nullify(b.farm_type_id),
+    nullify(b.coffee_id),
+    nullify(b.soil_type_id),
+    b.farm_name,
+    b.house_no,
+    b.village,
+    b.sub_district,
+    b.district,
+    b.postal_code,
+    nullify(b.area_size),
+    nullify(b.latitude),
+    nullify(b.longitude),
+    b.water_system ? 1 : 0,
+    b.description,
+    nullify(b.altitude),
+    nullify(b.planting_year) ,
+    req.params.id,
+  ];
+
+  if (req.user.role === 'owner') {
+    where += ' AND owner_id=?';
+    params.push(req.user.id);
+  }
+
+  const [result] = await pool.query(
+    `UPDATE coffee_farm SET
+      farm_type_id=?, coffee_id=?, soil_type_id=?,
+      farm_name=?, house_no=?, village=?,
+      sub_district=?, district=?, postal_code=?,
+      area_size=?, latitude=?, longitude=?,
+      water_system=?, description=?, altitude=?,
+      planting_year=?, updated_at=NOW()
+    WHERE ${where}`,
+    params
+  );
+
+  // ✅ อัปเดตรูปภาพถ้ามีไฟล์ใหม่
+  if (req.file) {
+    // ลบรูปเก่าก่อน (soft delete)
+    await pool.query(
+      `UPDATE media SET deleted_at=NOW() WHERE farm_id=?`,
+      [req.params.id]
+    );
+    // เพิ่มรูปใหม่
+    await pool.query(
+      `INSERT INTO media(farm_id, file_path, upload_date) VALUES(?, ?, NOW())`,
+      [req.params.id, '/uploads/' + req.file.filename]
+    );
+  }
+
+  // ✅ ตรวจสอบว่า update สำเร็จจริงไหม
+  if (result.affectedRows === 0) {
+    return res.status(404).json({ message: 'ไม่พบสวนหรือไม่มีสิทธิ์แก้ไข' });
+  }
+
   res.json({ message: 'แก้ไขสวนกาแฟสำเร็จ' });
 };
 

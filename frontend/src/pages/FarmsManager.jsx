@@ -135,71 +135,72 @@ export default function FarmsManager({ owner = false }) {
     );
   }, [rows, keyword]);
 
-  async function save(e) {
-    e.preventDefault();
+  
+const save = async (e) => {
+  e.preventDefault();
 
+  // 🔍 DEBUG — เปิด console ดูว่าค่าถูกส่งไหม
+  console.log("=== SAVE CALLED ===");
+  console.log("edit ID:", edit);
+  console.log("form data:", form);
+  console.log("has new image:", form.image instanceof File);
+
+  const hasNewImage = form.image instanceof File;
+
+  if (hasNewImage) {
     const fd = new FormData();
-
-    // Object.entries(form).forEach(([key, value]) => {
-    //   fd.append(key, value);
-    // });
     Object.entries(form).forEach(([key, value]) => {
       if (key === "image") {
-
-        // ส่งเฉพาะตอนเลือกรูปใหม่
-        if (value instanceof File) {
-          fd.append("image", value);
-        }
-
-      } else {
-        fd.append(key, value ?? "");
+        fd.append("image", value);
+      } else if (value !== null && value !== undefined) {
+        fd.append(key, value);
       }
     });
 
-    await api(edit ? `/farms/${edit.farm_id}` : "/farms", {
+    // 🔍 DEBUG
+    console.log("Sending FormData to:", edit ? `/farms/${edit}` : "/farms");
+    for (let [k, v] of fd.entries()) console.log(" fd:", k, "=", v);
+
+    await api(edit ? `/farms/${edit}` : "/farms", {
       method: edit ? "PUT" : "POST",
       body: fd,
     });
-    
-    setForm(blank);
-    setEdit(f.farm_id);
-    setPreview(null); // เพิ่มบรรทัดนี้
 
-    await load();
+  } else {
+    const payload = { ...form };
+    delete payload.image;
+
+    // 🔍 DEBUG
+    console.log("Sending JSON to:", edit ? `/farms/${edit}` : "/farms");
+    console.log("payload:", payload);
+
+    await api(edit ? `/farms/${edit}` : "/farms", {
+      method: edit ? "PUT" : "POST",
+      body: payload,
+    });
   }
 
+  setForm(blank);
+  setPreview(null);
+  setEdit(null);
+  await load();
+};
   
-  function start(f) {
+ function start(f) {
   setEdit(f.farm_id);
 
-  setPreview(
-    f.file_path
-      ? `${fileUrl}/${f.file_path}`
-      : null
-  );
+  const previewSrc = f.file_path ? fileUrl(f.file_path) : null; // ✅ เรียกเป็น function
+  setPreview(previewSrc);
 
   setForm({
     ...blank,
     ...f,
-
-    // แก้ date
-    planting_year: f.planting_year
-      ? f.planting_year.slice(0, 10)
-      : "",
-
-      // โหลดรูปเดิม
-    image: f.file_path
-      ? `${fileUrl}/${f.file_path}`
-      : "",
+    planting_year: f.planting_year ? f.planting_year.slice(0, 10) : "",
+    image: null, // ✅ ไม่ใส่ URL ลงใน image — ปล่อยว่างถ้าไม่เลือกรูปใหม่
   });
 
-  // เปิดแท็บฟอร์มแก้ไข
   setTab("add");
-  //เลื่อนขึ้นบน
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
-  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 
