@@ -25,7 +25,7 @@ export default function Home() {
           <div className="relative z-10 grid gap-10 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
             <div>
               <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-2 rounded-full bg-white/75 px-4 py-2 text-sm font-extrabold text-brown shadow-sm">
-                <Coffee size={17} /> ระบบสารสนเทศด้านกาแฟจังหวัดเลย
+                <Coffee size={17} /> ระบบสารสนเทศด้านกาแฟจังหวัดเลย นะ
               </motion.div>
 
               <motion.h1 initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .08 }} className="mt-5 max-w-4xl text-4xl font-black leading-tight text-coffee md:text-6xl">
