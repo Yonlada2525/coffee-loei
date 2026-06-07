@@ -25,22 +25,47 @@ function navClass({ isActive }) {
 }
 
 function Dropdown({ label, icon: Icon, items, onClick }) {
+  const [openDropdown, setOpenDropdown] = useState(false);
+
   return (
-    <div className="group relative">
-      <button type="button" className="nav-link">
+    <div className="relative">
+      <button
+        type="button"
+        className="nav-link"
+        onClick={() => setOpenDropdown(!openDropdown)}
+      >
         <Icon size={17} />
         <span>{label}</span>
+
         <ChevronDown
           size={15}
-          className="transition duration-300 group-hover:rotate-180"
+          className={`transition duration-300 ${
+            openDropdown ? 'rotate-180' : ''
+          }`}
         />
       </button>
-      <div className="invisible absolute right-0 top-full z-50 mt-3 w-72 translate-y-2 rounded-[24px] border border-white/80 bg-white/95 p-2 opacity-0 shadow-soft backdrop-blur-xl transition duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+
+      <div
+        className={`absolute right-0 top-full z-50 mt-3 w-72 rounded-[24px] border border-white/80 bg-white/95 p-2 shadow-soft backdrop-blur-xl transition duration-200 ${
+          openDropdown
+            ? 'visible translate-y-0 opacity-100'
+            : 'invisible translate-y-2 opacity-0'
+        }`}
+      >
         {items.map(([to, text, desc, ItemIcon]) => (
-          <NavLink key={to} to={to} onClick={onClick} className="menu-card">
+          <NavLink
+            key={to}
+            to={to}
+            onClick={() => {
+              setOpenDropdown(false);
+              onClick?.();
+            }}
+            className="menu-card"
+          >
             <span className="menu-card-icon">
               <ItemIcon size={18} />
             </span>
+
             <span>
               <b className="block text-sm text-coffee">{text}</b>
               <small className="text-xs leading-5 text-muted">{desc}</small>
@@ -74,7 +99,7 @@ function Footer() {
             <p className="mt-4 max-w-xl leading-7 text-muted">
               ระบบสารสนเทศเพื่อรวบรวม วิเคราะห์
               และแสดงผลข้อมูลพื้นที่ปลูกกาแฟของจังหวัดเลย สำหรับผู้ดูแลระบบ
-              เจ้าของสวน และประชาชนทั่วไป
+              เจ้าของสวน และผู้ใช้งานทั่วไป
             </p>
           </div>
 
